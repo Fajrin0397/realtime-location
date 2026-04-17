@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .top-bar{
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 75px;
+            background: rgb(32, 138, 165);
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+
+        #app {
+        font-family: Avenir, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: center;
+        color: #2c3e50;
+        margin-top: 60px;
+        }
+      .MapBox{
+        background: black;
+        width: 100%;
+        height: 500px; 
+        background: black;
+        top: 50px;
+        right: 0;
+        }
+        .top-bar h3{
+        position: absolute;
+        margin-right: 25px;
+        right: 0px;
+        }
+        #myMap {
+            height: 38.3rem; }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
+    integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
+    crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
+     integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg="
+     crossorigin=""></script>
+    <title>realtime marker</title>
+</head>
+<body>
+    <div id="app">
+        <nav class="top-bar"><h3 id="connect">disconnected</h3></nav>
+        
+        <div id="myMap" class="MapBox"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script>
+        var map = L.map('myMap').setView([0.675713, 127.3718183], 13);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+          let clickMarkers = {}
+          
+
+        var markerGroup = L.layerGroup().addTo(map)
+        var socket = io.connect('http://127.0.0.1:5000/');
+        socket.on('on_connect', (msg) => {
+            document.getElementById('connect').innerText = msg
+        })
+
+        
+        let defaultIcon = {}
+        navigator.geolocation.getCurrentPosition( posisi => {
+            const {latitude, longitude} = posisi.coords;
+            map.setView([latitude, longitude], 17);
+
+            const id = socket.id
+            const sendlist = [id, {lat:latitude, lng:longitude}]
+            socket.emit('on_click', sendlist)
+        }
+            
+        )
+
+         map.on('click', e => {
+        //     // console.log(e.latlng)
+            const id = socket.id
+            const sendlist = [id, e.latlng]
+            socket.emit('on_click', sendlist)
+            
+         })
+
+        socket.on('update_marker', markerObj => {
+            console.log(markerObj)
+             for(const key in markerObj){
+        console.log(markerObj[key].lat, markerObj[key].lng)
+    }
+            for(const key in markerObj){
+                    if(key in clickMarkers){
+                        markerGroup.removeLayer(clickMarkers[key])
+                    }
+                    
+                    if(key == socket.id){
+                        defaultIcon = new L.Icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        })
+                    } else {
+                        defaultIcon = new L.Icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        })
+                    }
+                    
+
+                    clickMarkers[key] = L.marker([markerObj[key].lat, markerObj[key].lng], {icon: defaultIcon}).addTo(markerGroup)
+                }
+            })
+
+            socket.on('remove_marker', obj => {
+                console.log(obj)
+                markerGroup.removeLayer(clickMarkers[obj])
+
+            })
+        
+
+    </script>
+</body>
+</html>
