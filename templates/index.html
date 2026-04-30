@@ -52,89 +52,201 @@
 <body>
     <div id="app">
         <nav class="top-bar"><h3 id="connect">disconnected</h3></nav>
-        
+        <span id="accuracy-info" style="position:absolute; left:16px; font-size:14px;">
+            Mendeteksi lokasi...
+        </span>
         <div id="myMap" class="MapBox"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-    <script>
-        var map = L.map('myMap').setView([0.675713, 127.3718183], 13);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-          let clickMarkers = {}
-          
+<script>
+    // =====================
+    // INISIALISASI MAP
+    // =====================
+    var map = L.map('myMap').setView([0.675713, 127.3718183], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
 
-        var markerGroup = L.layerGroup().addTo(map)
-        var socket = io.connect('http://127.0.0.1:5000/');
-        socket.on('on_connect', (msg) => {
-            document.getElementById('connect').innerText = msg
-        })
+    // =====================
+    // VARIABEL GLOBAL
+    // =====================
+    var clickMarkers = {};
+    var markerGroup = L.layerGroup().addTo(map);
 
-        
-        let defaultIcon = {}
-        navigator.geolocation.getCurrentPosition( posisi => {
-            const {latitude, longitude} = posisi.coords;
-            map.setView([latitude, longitude], 17);
+    // =====================
+    // INISIALISASI SOCKET
+    // =====================
+    var socket = io.connect(); // dinamis, tidak hardcoded
 
-            const id = socket.id
-            const sendlist = [id, {lat:latitude, lng:longitude}]
-            socket.emit('on_click', sendlist)
-        }
-            
-        )
-
-         map.on('click', e => {
-        //     // console.log(e.latlng)
-            const id = socket.id
-            const sendlist = [id, e.latlng]
-            socket.emit('on_click', sendlist)
-            
-         })
-
-        socket.on('update_marker', markerObj => {
-            console.log(markerObj)
-             for(const key in markerObj){
-        console.log(markerObj[key].lat, markerObj[key].lng)
+    // =====================
+    // HELPER: BUAT ICON
+    // =====================
+    function createIcon(isOwn) {
+        return new L.Icon({
+            iconUrl: isOwn
+                ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png'
+                : 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
     }
-            for(const key in markerObj){
-                    if(key in clickMarkers){
-                        markerGroup.removeLayer(clickMarkers[key])
-                    }
-                    
-                    if(key == socket.id){
-                        defaultIcon = new L.Icon({
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [1, -34],
-                            shadowSize: [41, 41]
-                        })
-                    } else {
-                        defaultIcon = new L.Icon({
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [1, -34],
-                            shadowSize: [41, 41]
-                        })
-                    }
-                    
 
-                    clickMarkers[key] = L.marker([markerObj[key].lat, markerObj[key].lng], {icon: defaultIcon}).addTo(markerGroup)
-                }
-            })
+    // =====================
+    // HELPER: TAMBAH / UPDATE MARKER
+    // =====================
+    function upsertMarker(key, lat, lng) {
+        // Hapus marker lama jika sudah ada
+        if (clickMarkers[key]) {
+            markerGroup.removeLayer(clickMarkers[key]);
+            delete clickMarkers[key];
+        }
 
-            socket.on('remove_marker', obj => {
-                console.log(obj)
-                markerGroup.removeLayer(clickMarkers[obj])
+        // Buat marker baru
+        var icon = createIcon(key === socket.id);
+        clickMarkers[key] = L.marker([lat, lng], { icon: icon }).addTo(markerGroup);
+    }
 
-            })
-        
+    // =====================
+    // HELPER: HAPUS MARKER
+    // =====================
+    function removeMarker(key) {
+        if (clickMarkers[key]) {
+            markerGroup.removeLayer(clickMarkers[key]);
+            delete clickMarkers[key];
+        }
+    }
 
-    </script>
+    // =====================
+    // SOCKET: ON CONNECT
+    // =====================
+    socket.on('on_connect', function(msg) {
+        document.getElementById('connect').innerText = msg;
+        console.log('Socket terhubung:', socket.id);
+    });
+
+    
+   
+
+    // =====================
+    // SOCKET: REMOVE MARKER (saat user disconnect)
+    // =====================
+    socket.on('remove_marker', function(key) {
+        console.log('remove_marker:', key);
+        removeMarker(key);
+    });
+
+    // =====================
+    // SOCKET: DISCONNECT
+    // =====================
+    socket.on('disconnect', function() {
+        document.getElementById('connect').innerText = 'disconnected';
+        console.warn('Socket terputus');
+    });
+
+    // =====================
+    // GEOLOCATION: KIRIM POSISI AWAL USER
+    // =====================
+    // =====================
+// GEOLOCATION: WATCH POSISI USER (realtime)
+// =====================
+var watchId = null;
+
+function startWatchPosition() {
+    if (!navigator.geolocation) {
+        console.warn('Browser tidak mendukung geolocation');
+        sendFallbackPosition();
+        return;
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+        function(posisi) {
+            var latitude  = posisi.coords.latitude;
+            var longitude = posisi.coords.longitude;
+            var accuracy  = posisi.coords.accuracy; // dalam meter
+
+            console.log('Posisi update:', latitude, longitude, '| Akurasi:', accuracy, 'meter');
+
+            // Tampilkan info akurasi ke UI
+            updateAccuracyUI(accuracy);
+
+            // Hanya pindahkan view map saat pertama kali
+            if (!window._mapViewSet) {
+                map.setView([latitude, longitude], 17);
+                window._mapViewSet = true;
+            }
+
+            // Kirim ke server
+            socket.emit('on_click', [socket.id, { lat: latitude, lng: longitude }]);
+        },
+        function(error) {
+            console.warn('Geolocation error:', error.message);
+
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById('accuracy-info').innerText = 'Izin lokasi ditolak';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById('accuracy-info').innerText = 'Lokasi tidak tersedia';
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById('accuracy-info').innerText = 'Timeout, coba lagi...';
+                    // Retry otomatis setelah 3 detik
+                    setTimeout(startWatchPosition, 3000);
+                    break;
+            }
+
+            sendFallbackPosition();
+        },
+        {
+            enableHighAccuracy: true, // pakai GPS jika tersedia
+            timeout: 15000,           // tunggu maksimal 15 detik
+            maximumAge: 0             // jangan pakai cache lokasi lama
+        }
+    );
+}
+
+function sendFallbackPosition() {
+    var fallbackLat = 0.675713;
+    var fallbackLng = 127.3718183;
+    map.setView([fallbackLat, fallbackLng], 13);
+    socket.emit('on_click', [socket.id, { lat: fallbackLat, lng: fallbackLng }]);
+}
+
+function updateAccuracyUI(accuracy) {
+    var el = document.getElementById('accuracy-info');
+    if (!el) return;
+
+    if (accuracy <= 10) {
+        el.innerText = '📍 Akurasi: ' + Math.round(accuracy) + 'm (GPS)';
+        el.style.color = 'lightgreen';
+    } else if (accuracy <= 100) {
+        el.innerText = '📍 Akurasi: ' + Math.round(accuracy) + 'm (Baik)';
+        el.style.color = 'yellow';
+    } else {
+        el.innerText = '📍 Akurasi: ' + Math.round(accuracy) + 'm (Buruk - pakai HP)';
+        el.style.color = 'orange';
+    }
+}
+
+// Mulai watch saat socket sudah connect
+socket.on('on_connect', function(msg) {
+    document.getElementById('connect').innerText = msg;
+    console.log('Socket terhubung:', socket.id);
+    startWatchPosition(); // mulai tracking setelah connect
+});
+
+// Hentikan watch saat tab ditutup
+window.addEventListener('beforeunload', function() {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+});
+
+</script>
 </body>
 </html>
