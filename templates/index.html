@@ -9,50 +9,209 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 
     <style>
-        .top-bar{
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            width: 100%;
-            height:54px;
-            background: rgb(32, 138, 165);
-            display: flex;
-            align-items: center;
-            color: white;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        #app {
+    body {
         font-family: Avenir, Helvetica, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-align: center;
-        color: #2c3e50;
-        margin-top: 60px;
-        }
-      .MapBox{
-        background: black;
-        width: 100%;
-        height: 500px; 
-        background: black;
-        top: 50px;
-        right: 0;
-        }
-        .top-bar h3{
-        
-        margin-right: 25px;
-        right: 0px;
-        }
-        
-        #map {
-            height: 100vh;
-        }
-    </style>
-</head>
-<body>
-<nav class="top-bar"></nav>
-<h3>Login sebagai: {{ username }}</h3>
-<div id="map"></div>
+        background: #f0f4f8;
+    }
 
+    /* ===== NAVBAR ===== */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 56px;
+        background: rgb(32, 138, 165);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        gap: 12px;
+        z-index: 1000;
+        box-sizing: border-box;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .nav-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        border: 1.5px solid rgba(255,255,255,0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 500;
+        color: white;
+        flex-shrink: 0;
+        text-transform: uppercase;
+    }
+
+    .nav-user {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .nav-username {
+        font-size: 13px;
+        font-weight: 500;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+    }
+
+    .nav-subtitle {
+        font-size: 11px;
+        color: rgba(255,255,255,0.65);
+        line-height: 1.3;
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .accuracy-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 20px;
+        padding: 4px 10px;
+    }
+
+    .accuracy-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #4ade80;
+        flex-shrink: 0;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.4; }
+    }
+
+    #accuracy-text {
+        font-size: 11px;
+        color: white;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #4ade80;
+        border: 1.5px solid rgba(255,255,255,0.4);
+        flex-shrink: 0;
+    }
+
+    /* ===== INFO BAR ===== */
+    .info-bar {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        width: 100%;
+        background: white;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 999;
+        box-sizing: border-box;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: #888;
+    }
+
+    .info-item span {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .info-divider {
+        width: 1px;
+        height: 18px;
+        background: rgba(0,0,0,0.1);
+    }
+
+    /* ===== MAP ===== */
+    #app {
+        padding-top: 96px; /* navbar 56px + info-bar 40px */
+    }
+
+    #map {
+        width: 100%;
+        height: calc(100vh - 96px);
+    }
+</style>
+
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="nav-avatar" id="nav-avatar">
+            {{ username[:2] }}
+        </div>
+        <div class="nav-user">
+            <div class="nav-username">{{ username }}</div>
+            <div class="nav-subtitle" id="nav-subtitle">Mendeteksi lokasi...</div>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="accuracy-badge">
+            <div class="accuracy-dot" id="accuracy-dot"></div>
+            <span id="accuracy-text">...</span>
+        </div>
+        <div class="status-dot" id="status-dot"></div>
+    </div>
+</nav>
+
+<div class="info-bar">
+    <div class="info-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgb(32,138,165)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="coord-display">—</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgb(32,138,165)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span id="online-count">0 online</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgb(32,138,165)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>Live</span>
+    </div>
+</div>
+
+<div id="app">
+    <div id="map"></div>
+</div>
 <script>
 // ======================
 // MAP INIT
@@ -151,7 +310,9 @@ socket.on('remove_user', function(sid) {
 navigator.geolocation.watchPosition(function(pos) {
     var lat = pos.coords.latitude;
     var lng = pos.coords.longitude;
+    var accuracy  = pos.coords.accuracy;
 
+    updateAccuracyUI(accuracy, lat, lng);
     if (!window._mapSet) {
         map.setView([lat, lng], 17);
         window._mapSet = true;
@@ -164,9 +325,52 @@ navigator.geolocation.watchPosition(function(pos) {
 
 }, function(err) {
     console.warn(err);
+    switch(err.code) {
+
+            case err.PERMISSION_DENIED:
+                    window.location.href = '/denied';
+                    break;
+            case err.POSITION_UNAVAILABLE:
+                    document.getElementById('accuracy-info').innerText = 'Lokasi tidak tersedia';
+                    break;
+            case err.TIMEOUT:
+                    document.getElementById('accuracy-info').innerText = 'Timeout, coba lagi...';
+                    // Retry otomatis setelah 3 detik
+                    setTimeout(startWatchPosition, 3000);
+                 break;
+            }
 }, {
     enableHighAccuracy: true
 });
+
+function updateAccuracyUI(accuracy, lat, lng) {
+    var dot  = document.getElementById('accuracy-dot');
+    var text = document.getElementById('accuracy-text');
+    var sub  = document.getElementById('nav-subtitle');
+    var coord = document.getElementById('coord-display');
+    var el = document.getElementById('accuracy-info');
+    if (coord && lat !== undefined && lng !== undefined) {
+        coord.textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+    }
+    
+    if (accuracy <= 10) {
+        dot.style.background  = '#4ade80'; // hijau
+        dot.style.animation   = 'pulse 2s infinite';
+        text.textContent      = Math.round(accuracy) + 'm (GPS)';
+        sub.textContent       = 'Akurasi tinggi';
+    } else if (accuracy <= 100) {
+         dot.style.background  = '#fbbf24'; // kuning
+        dot.style.animation   = 'pulse 2s infinite';
+        text.textContent      = Math.round(accuracy) + 'm (WiFi)';
+        sub.textContent       = 'Akurasi sedang';
+    } else {
+        dot.style.background  = '#f87171'; // merah
+        dot.style.animation   = 'none';
+        text.textContent      = Math.round(accuracy) + 'm (Buruk)';
+        sub.textContent       = 'Akurasi rendah';
+    }
+}
+
 </script>
 
 </body>

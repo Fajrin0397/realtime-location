@@ -36,6 +36,10 @@ def login():
 
     return render_template('login.html')
 
+@app.route('/denied')
+def denied():
+    return render_template('denied.html')
+
 # ======================
 # MAIN PAGE
 # ======================

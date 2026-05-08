@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akses Lokasi Diperlukan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: Avenir, Helvetica, Arial, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px 40px;
+            text-align: center;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            max-width: 420px;
+            width: 90%;
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            color: #e74c3c;
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .steps {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .steps p {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .steps ol {
+            padding-left: 20px;
+            color: #555;
+            font-size: 14px;
+            line-height: 2;
+            margin: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background: rgb(32, 138, 165);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: rgb(25, 110, 132);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">📍</div>
+        <h1>Akses Lokasi Diperlukan</h1>
+        <p>Aplikasi ini membutuhkan izin lokasi untuk menampilkan posisi Anda di peta secara realtime.</p>
+
+        <div class="steps">
+            <p>Cara mengaktifkan lokasi:</p>
+            <ol>
+                <li>Klik ikon 🔒 di address bar browser</li>
+                <li>Pilih <strong>Izinkan</strong> pada bagian Lokasi</li>
+                <li>Refresh halaman</li>
+            </ol>
+        </div>
+
+        <button class="btn" onclick="window.location.href='/'">
+            🔄 Coba Lagi
+        </button>
+    </div>
+</body>
+</html>
