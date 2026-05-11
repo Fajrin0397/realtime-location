@@ -222,15 +222,24 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
 }).addTo(map);
 
-// ======================
+
+var circle = L.circle([0.683074, 127.375341], {
+    color: 'red',       // Warna garis tepi
+    fillColor: '#f03',  // Warna isi lingkaran
+    fillOpacity: 0.2,   // Tingkat transparansi (0 sampai 1)
+    radius: 2000         // Radius dalam satuan meter
+}).addTo(map);
+
+// Menambahkan popup saat lingkaran diklik
+circle.bindPopup("Distrik Shiganshina.");
+
+
 // SOCKET
-// ======================
 var socket = io();
 var mySid = null;
 
-// ======================
+
 // MARKER STORAGE
-// ======================
 var markers = {};
 var markerGroup = L.layerGroup().addTo(map);
 

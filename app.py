@@ -22,15 +22,15 @@ online_users = {}
 # ======================
 # LOGIN
 # ======================
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/track-loc-login', methods=['GET', 'POST'])
+def loginlocLogin():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
         if username  and users_db['rin'] == password:
             session['username'] = username
-            return redirect('/')
+            return redirect('/track-im-here')
         else:
             return "Login gagal"
 
@@ -43,10 +43,10 @@ def denied():
 # ======================
 # MAIN PAGE
 # ======================
-@app.route('/')
+@app.route('/track-im-here')
 def index():
     if 'username' not in session:
-        return redirect('/login')
+        return redirect('/track-loc-login')
 
     return render_template('index.html', username=session['username'])
 
