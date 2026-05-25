@@ -235,7 +235,9 @@ circle.bindPopup("Distrik Shiganshina.");
 
 
 // SOCKET
-var socket = io();
+var socket = io({
+    transports: ['websocket']
+});
 var mySid = null;
 
 
@@ -257,14 +259,23 @@ function createIcon(isMe) {
     });
 }
 
-// ======================
+
 // UPDATE MARKER
-// ======================
 function upsertUserMarker(sid, user) {
+
+    // Kalau marker SUDAH ADA → update posisi saja
     if (markers[sid]) {
-        markerGroup.removeLayer(markers[sid]);
+
+        markers[sid].setLatLng([user.lat, user.lng]);
+
+        markers[sid].getPopup().setContent(`
+            <b>${user.name}</b>
+        `);
+
+        return;
     }
 
+    // Kalau BELUM ADA → buat marker baru
     const isMe = sid === mySid;
 
     const marker = L.marker([user.lat, user.lng], {
@@ -316,6 +327,9 @@ socket.on('remove_user', function(sid) {
 // ======================
 // GEOLOCATION
 // ======================
+var lastLat = null;
+var lastLng = null;
+
 navigator.geolocation.watchPosition(function(pos) {
     var lat = pos.coords.latitude;
     var lng = pos.coords.longitude;
@@ -326,7 +340,13 @@ navigator.geolocation.watchPosition(function(pos) {
         map.setView([lat, lng], 17);
         window._mapSet = true;
     }
-
+    if (
+    lastLat &&
+    Math.abs(lat - lastLat) < 0.00001 &&
+    Math.abs(lng - lastLng) < 0.00001
+    ) {
+        return;
+    }
     socket.emit('update_location', {
         lat: lat,
         lng: lng
