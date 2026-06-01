@@ -240,6 +240,13 @@ var socket = io({
 });
 var mySid = null;
 
+socket.on('connect', () => {
+    console.log('CONNECTED', socket.id);
+});
+
+socket.on('reconnect', () => {
+    console.log('RECONNECTED', socket.id);
+});
 
 // MARKER STORAGE
 var markers = {};
@@ -314,6 +321,9 @@ socket.on('update_users', function(users) {
     }
 });
 
+socket.on('disconnect', () => {
+    console.log('DISCONNECTED');
+});
 // ======================
 // REMOVE USER
 // ======================
@@ -369,7 +379,8 @@ navigator.geolocation.watchPosition(function(pos) {
                  break;
             }
 }, {
-    enableHighAccuracy: true
+    enableHighAccuracy: true,
+    timeout: 5000
 });
 
 function updateAccuracyUI(accuracy, lat, lng) {

@@ -63,7 +63,7 @@ def connect():
         return False  # tolak kalau belum login
 
     sid = request.sid
-
+    print("CONNECT:", request.sid, session.get('username'))
     online_users[sid] = {
         "name": username,
         "lat": None,
@@ -83,7 +83,7 @@ def connect():
 @socketio.on('update_location')
 def update_location(data):
     sid = request.sid
-
+    print("UPDATE:", request.sid)
     if sid in online_users:
         online_users[sid]["lat"] = data["lat"]
         online_users[sid]["lng"] = data["lng"]
@@ -96,7 +96,7 @@ def update_location(data):
 @socketio.on('disconnect')
 def disconnect():
     sid = request.sid
-
+    print("DISCONNECT:", request.sid)
     if sid in online_users:
         del online_users[sid]
         emit('remove_user', sid, broadcast=True)
