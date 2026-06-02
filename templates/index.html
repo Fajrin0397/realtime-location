@@ -375,12 +375,12 @@ navigator.geolocation.watchPosition(function(pos) {
             case err.TIMEOUT:
                     document.getElementById('accuracy-info').innerText = 'Timeout, coba lagi...';
                     // Retry otomatis setelah 3 detik
-                    setTimeout(startWatchPosition, 3000);
+                    setTimeout(startWatchPosition, 11000);
                  break;
             }
 }, {
     enableHighAccuracy: true,
-    timeout: 5000
+    
 });
 
 function updateAccuracyUI(accuracy, lat, lng) {
