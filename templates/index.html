@@ -300,6 +300,15 @@ function upsertUserMarker(sid, user) {
 socket.on('init', function(data) {
     mySid = data.sid;
 
+    // Hapus marker yang tidak ada di data terbaru
+    for (const sid in markers) {
+        if (!data.users[sid]) {
+            markerGroup.removeLayer(markers[sid]);
+            delete markers[sid];
+        }
+    }
+
+    // Upsert semua user dari server
     for (const sid in data.users) {
         const user = data.users[sid];
         if (user.lat !== null) {
@@ -307,20 +316,26 @@ socket.on('init', function(data) {
         }
     }
 });
-
 // ======================
 // UPDATE USERS
 // ======================
 socket.on('update_users', function(users) {
+    // Hapus marker yang sudah tidak ada di daftar server
+    for (const sid in markers) {
+        if (!users[sid]) {
+            markerGroup.removeLayer(markers[sid]);
+            delete markers[sid];
+        }
+    }
+
     for (const sid in users) {
         const user = users[sid];
-
         if (user.lat !== null) {
             upsertUserMarker(sid, user);
         }
     }
 });
-
+        
 socket.on('disconnect', () => {
     console.log('DISCONNECTED');
 });

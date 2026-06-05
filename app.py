@@ -55,15 +55,26 @@ def index():
 # ======================
 # SOCKET CONNECT
 # ======================
+# ======================
+# SOCKET CONNECT
+# ======================
 @socketio.on('connect')
 def connect():
     username = session.get('username')
 
     if not username:
-        return False  # tolak kalau belum login
+        return False
 
     sid = request.sid
-    print("CONNECT:", request.sid, session.get('username'))
+
+    # Hapus sid lama milik username yang sama (jika reconnect)
+    stale_sids = [
+        s for s, u in online_users.items()
+        if u["name"] == username and s != sid
+    ]
+    for s in stale_sids:
+        del online_users[s]
+
     online_users[sid] = {
         "name": username,
         "lat": None,
@@ -75,7 +86,7 @@ def connect():
         "users": online_users
     })
 
-    emit('user_joined', online_users[sid], broadcast=True)
+    emit('update_users', online_users, broadcast=True)  # broadcast ke semua supaya marker lama hilang
 
 # ======================
 # UPDATE LOKASI
