@@ -171,6 +171,36 @@
         width: 100%;
         height: calc(100vh - 96px);
     }
+
+/* ===== FLOATING CHAT ===== */
+.chat-toggle{position:fixed;right:22px;bottom:22px;z-index:1200;width:58px;height:58px;border:0;border-radius:50%;background:#208aa5;color:#fff;box-shadow:0 5px 18px rgba(0,0,0,.25);cursor:pointer;font-size:23px}.chat-toggle:hover,.chat-send:hover{background:#176f86}.chat-badge{position:absolute;top:-2px;right:-2px;min-width:19px;height:19px;padding:0 5px;border-radius:12px;background:#ef4444;color:#fff;border:2px solid white;font-size:10px;line-height:15px;font-weight:700;display:none}
+.chat-panel{position:fixed;z-index:1199;right:22px;bottom:92px;width:340px;height:min(490px,calc(100vh - 180px));min-height:330px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:14px;box-shadow:0 12px 38px rgba(0,0,0,.22);display:none;flex-direction:column;overflow:hidden}.chat-panel.open{display:flex}.chat-header{min-height:52px;padding:0 14px;background:#208aa5;color:white;display:flex;align-items:center;justify-content:space-between}.chat-header-title{font-size:14px;font-weight:700}.chat-header-subtitle{margin-top:2px;font-size:10px;opacity:.8}.chat-close{border:0;background:transparent;color:white;font-size:23px;cursor:pointer;padding:3px 6px}
+.chat-users{padding:10px 12px;border-bottom:1px solid #e8edf0;max-height:118px;overflow-y:auto}.chat-section-label{margin-bottom:7px;color:#84919a;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.chat-user{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;color:#263238}.chat-user-avatar{width:27px;height:27px;flex:0 0 27px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#e0f2f7;color:#16748c;font-size:10px;font-weight:700;text-transform:uppercase}.chat-online-dot{width:7px;height:7px;margin-left:auto;border-radius:50%;background:#22c55e}
+.chat-messages{flex:1;min-height:0;padding:12px;overflow-y:auto;background:#f7fafb;display:flex;flex-direction:column;gap:9px}.chat-empty{margin:auto;max-width:230px;color:#91a0a8;font-size:12px;line-height:1.5;text-align:center}.chat-message{max-width:85%;padding:8px 10px;border-radius:11px;background:#e8eef1;color:#263238;overflow-wrap:anywhere;font-size:12px;line-height:1.45}.chat-message.mine{align-self:flex-end;background:#d9f1f7}.chat-message-sender{margin-bottom:3px;color:#16748c;font-size:10px;font-weight:700}.chat-message-time{margin-top:4px;color:#84919a;font-size:9px;text-align:right}.chat-compose{display:flex;gap:7px;padding:10px;border-top:1px solid #e8edf0;background:#fff}.chat-input{min-width:0;flex:1;padding:10px 12px;border:1px solid #dce4e8;border-radius:20px;outline:none;font:inherit;font-size:12px}.chat-input:focus{border-color:#208aa5}.chat-send{width:38px;height:38px;flex:0 0 38px;border:0;border-radius:50%;background:#208aa5;color:white;cursor:pointer;font-size:16px}
+@media(max-width:480px){.chat-panel{right:10px;bottom:82px;width:calc(100vw - 20px);height:min(470px,calc(100vh - 160px))}.chat-toggle{right:14px;bottom:14px}}
+
+
+/* Dialog daftar anggota online */
+.online-trigger { border:0; background:transparent; cursor:pointer; padding:0; font:inherit; }
+.online-trigger:hover span { color:#208aa5; text-decoration:underline; }
+.online-trigger:focus-visible { outline:2px solid #208aa5; outline-offset:5px; border-radius:4px; }
+.online-dialog-backdrop { position:fixed; inset:0; z-index:1500; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.42); }
+.online-dialog-backdrop[hidden] { display:none; }
+.online-dialog { width:min(390px,100%); max-height:min(520px,85vh); display:flex; flex-direction:column; overflow:hidden; border-radius:15px; background:#fff; box-shadow:0 18px 55px rgba(0,0,0,.25); animation:onlineDialogIn .16s ease-out; }
+@keyframes onlineDialogIn { from {opacity:0;transform:translateY(8px) scale(.98)} to {opacity:1;transform:translateY(0) scale(1)} }
+.online-dialog-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:17px 18px; color:#fff; background:#208aa5; }
+.online-dialog-header h2 { font-size:16px; font-weight:700; }
+.online-dialog-header p { margin-top:3px; font-size:11px; opacity:.82; }
+.online-dialog-close { border:0; background:transparent; color:#fff; font-size:26px; line-height:1; cursor:pointer; }
+.online-dialog-list { padding:10px 16px 16px; overflow-y:auto; }
+.online-member-row { display:flex; align-items:center; gap:11px; padding:11px 2px; border-bottom:1px solid #edf1f3; }
+.online-member-avatar { width:38px; height:38px; flex:0 0 38px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#e2f3f7; color:#16748c; font-size:12px; font-weight:700; text-transform:uppercase; }
+.online-member-info { flex:1; min-width:0; }
+.online-member-name { color:#263238; font-size:13px; font-weight:600; overflow-wrap:anywhere; }
+.online-member-status { margin-top:3px; color:#7b8a91; font-size:11px; }
+.online-member-indicator { width:9px; height:9px; flex:0 0 9px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 3px #dcfce7; }
+.online-dialog-empty { padding:30px 12px; color:#89969d; font-size:12px; text-align:center; }
+
 </style>
 
 <nav class="navbar">
@@ -198,10 +228,11 @@
         <span id="coord-display">—</span>
     </div>
     <div class="info-divider"></div>
-    <div class="info-item">
+    <button type="button" class="info-item online-trigger" id="online-trigger"
+            aria-haspopup="dialog" aria-controls="online-dialog" aria-expanded="false">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgb(32,138,165)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span id="online-count">0 online</span>
-    </div>
+    </button>
     <div class="info-divider"></div>
     <div class="info-item">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgb(32,138,165)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -210,8 +241,32 @@
 </div>
 
 <div id="app">
+    
+<div class="online-dialog-backdrop" id="online-dialog-backdrop" hidden>
+    <section class="online-dialog" id="online-dialog" role="dialog" aria-modal="true" aria-labelledby="online-dialog-title">
+        <header class="online-dialog-header">
+            <div>
+                <h2 id="online-dialog-title">Anggota Aktif</h2>
+                <p id="online-dialog-subtitle">0 anggota sedang online</p>
+            </div>
+            <button type="button" class="online-dialog-close" id="online-dialog-close" aria-label="Tutup daftar anggota">&times;</button>
+        </header>
+        <div class="online-dialog-list" id="online-dialog-list">
+            <p class="online-dialog-empty">Belum ada anggota yang online.</p>
+        </div>
+    </section>
+</div>
+
     <div id="map"></div>
 </div>
+
+<button type="button" class="chat-toggle" id="chat-toggle" aria-label="Buka chat" aria-expanded="false" title="Buka chat">✉<span class="chat-badge" id="chat-badge">0</span></button>
+<aside class="chat-panel" id="chat-panel" aria-label="Chat anggota online">
+ <div class="chat-header"><div><div class="chat-header-title">Live Chat</div><div class="chat-header-subtitle" id="chat-online-label">0 anggota online</div></div><button type="button" class="chat-close" id="chat-close" aria-label="Tutup chat">&times;</button></div>
+ <div class="chat-messages" id="chat-messages" aria-live="polite"><div class="chat-empty" id="chat-empty">Belum ada pesan. Mulai percakapan dengan anggota yang sedang online.</div></div>
+ <form class="chat-compose" id="chat-form"><input class="chat-input" id="chat-input" type="text" maxlength="1000" autocomplete="off" placeholder="Ketik pesan..." aria-label="Pesan chat"><button class="chat-send" type="submit" aria-label="Kirim pesan">➤</button></form>
+</aside>
+
 <script>
 // ======================
 // MAP INIT
@@ -372,6 +427,8 @@ navigator.geolocation.watchPosition(function(pos) {
     ) {
         return;
     }
+    lastLat = lat;
+    lastLng = lng;
     socket.emit('update_location', {
         lat: lat,
         lng: lng
@@ -425,6 +482,96 @@ function updateAccuracyUI(accuracy, lat, lng) {
         sub.textContent       = 'Akurasi rendah';
     }
 }
+
+
+// ===== FLOATING CHAT =====
+const chatPanel=document.getElementById('chat-panel');
+const chatToggle=document.getElementById('chat-toggle');
+
+const chatMessages=document.getElementById('chat-messages');
+const chatInput=document.getElementById('chat-input');
+const chatBadge=document.getElementById('chat-badge');
+const chatOnlineLabel=document.getElementById('chat-online-label');
+let unreadMessages=0;
+function setChatOpen(open){chatPanel.classList.toggle('open',open);chatToggle.setAttribute('aria-expanded',String(open));if(open){unreadMessages=0;updateChatBadge();chatMessages.scrollTop=chatMessages.scrollHeight;chatInput.focus();}}
+function updateChatBadge(){chatBadge.textContent=unreadMessages>9?'9+':String(unreadMessages);chatBadge.style.display=unreadMessages>0&&!chatPanel.classList.contains('open')?'block':'none';}
+chatToggle.addEventListener('click',()=>setChatOpen(!chatPanel.classList.contains('open')));
+document.getElementById('chat-close').addEventListener('click',()=>setChatOpen(false));
+
+const onlineDialogBackdrop = document.getElementById('online-dialog-backdrop');
+const onlineDialogList = document.getElementById('online-dialog-list');
+const onlineDialogSubtitle = document.getElementById('online-dialog-subtitle');
+const onlineTrigger = document.getElementById('online-trigger');
+const onlineDialogClose = document.getElementById('online-dialog-close');
+
+function openOnlineDialog() {
+    onlineDialogBackdrop.hidden = false;
+    onlineTrigger.setAttribute('aria-expanded', 'true');
+    onlineDialogClose.focus();
+}
+function closeOnlineDialog() {
+    onlineDialogBackdrop.hidden = true;
+    onlineTrigger.setAttribute('aria-expanded', 'false');
+    onlineTrigger.focus();
+}
+onlineTrigger.addEventListener('click', openOnlineDialog);
+onlineDialogClose.addEventListener('click', closeOnlineDialog);
+onlineDialogBackdrop.addEventListener('click', function(event) {
+    if (event.target === onlineDialogBackdrop) closeOnlineDialog();
+});
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && !onlineDialogBackdrop.hidden) closeOnlineDialog();
+});
+
+function renderOnlineUsers(users) {
+    const entries = Object.entries(users || {});
+    const count = document.getElementById('online-count');
+    if (count) count.textContent = `${entries.length} online`;
+    chatOnlineLabel.textContent = `${entries.length} anggota online`;
+    onlineDialogSubtitle.textContent = `${entries.length} anggota sedang online`;
+    onlineDialogList.replaceChildren();
+
+    if (!entries.length) {
+        const empty = document.createElement('p');
+        empty.className = 'online-dialog-empty';
+        empty.textContent = 'Belum ada anggota yang online.';
+        onlineDialogList.appendChild(empty);
+        return;
+    }
+
+    entries.forEach(([sid, user]) => {
+        const row = document.createElement('div');
+        row.className = 'online-member-row';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'online-member-avatar';
+        avatar.textContent = (user.name || 'U').trim().slice(0, 2);
+
+        const info = document.createElement('div');
+        info.className = 'online-member-info';
+
+        const name = document.createElement('div');
+        name.className = 'online-member-name';
+        name.textContent = user.name || 'Pengguna';
+
+        const status = document.createElement('div');
+        status.className = 'online-member-status';
+        status.textContent = sid === mySid ? 'Anda · Sedang aktif' : 'Sedang aktif';
+
+        const indicator = document.createElement('span');
+        indicator.className = 'online-member-indicator';
+        indicator.title = 'Online';
+
+        info.append(name, status);
+        row.append(avatar, info, indicator);
+        onlineDialogList.appendChild(row);
+    });
+}
+function appendChatMessage(message){if(!message||typeof message.text!=='string')return;const empty=document.getElementById('chat-empty');if(empty)empty.remove();const bubble=document.createElement('div');bubble.className='chat-message'+(message.sid===mySid?' mine':'');const sender=document.createElement('div');sender.className='chat-message-sender';sender.textContent=message.sid===mySid?'Anda':(message.name||'Anggota');const body=document.createElement('div');body.textContent=message.text;const time=document.createElement('div');time.className='chat-message-time';time.textContent=message.time||new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});bubble.append(sender,body,time);chatMessages.appendChild(bubble);chatMessages.scrollTop=chatMessages.scrollHeight;if(message.sid!==mySid&&!chatPanel.classList.contains('open')){unreadMessages++;updateChatBadge();}}
+document.getElementById('chat-form').addEventListener('submit',event=>{event.preventDefault();const text=chatInput.value.trim();if(!text)return;if(!socket.connected){alert('Koneksi terputus. Pesan belum dapat dikirim.');return;}socket.emit('send_message',{text});chatInput.value='';chatInput.focus();});
+socket.on('init',data=>{if(data&&data.users)renderOnlineUsers(data.users);});
+socket.on('update_users',users=>renderOnlineUsers(users));
+socket.on('receive_message',message=>appendChatMessage(message));
 
 </script>
 

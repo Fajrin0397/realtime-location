@@ -2,11 +2,16 @@ import eventlet
 eventlet.monkey_patch() 
 from flask_socketio import SocketIO, emit
 from flask import Flask, render_template, request, redirect, session
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
 socketio = SocketIO(app, cors_allowed_origins="*")
+# Penyimpanan sementara pesan chat
+chat_history = []
+
+MAX_CHAT_HISTORY = 100
 
 # ======================
 # DATABASE SEDERHANA
@@ -55,9 +60,6 @@ def index():
 # ======================
 # SOCKET CONNECT
 # ======================
-# ======================
-# SOCKET CONNECT
-# ======================
 @socketio.on('connect')
 def connect():
     username = session.get('username')
@@ -100,6 +102,61 @@ def update_location(data):
         online_users[sid]["lng"] = data["lng"]
 
     emit('update_users', online_users, broadcast=True)
+
+@socketio.on('send_message')
+def handle_send_message(data):
+
+    sid = request.sid
+
+    # Pastikan user sudah terdaftar dan login
+    if sid not in online_users:
+        emit('chat_error', {
+            'message': 'Anda belum terdaftar sebagai anggota online.'
+        })
+        return
+
+    # Validasi data
+    if not isinstance(data, dict):
+        return
+
+    message_text = data.get('text', '')
+
+    if not isinstance(message_text, str):
+        return
+
+    message_text = message_text.strip()
+
+    if not message_text:
+        return
+
+    if len(message_text) > 1000:
+        emit('chat_error', {
+            'message': 'Pesan maksimal 1000 karakter.'
+        })
+        return
+
+    # Ambil identitas pengirim dari server
+    user = online_users[sid]
+
+    message = {
+        'sid': sid,
+        'name': user['name'],
+        'text': message_text,
+        'time': datetime.now().strftime('%H:%M')
+    }
+
+    # Simpan pesan
+    chat_history.append(message)
+
+    # Batasi riwayat menjadi 100 pesan
+    if len(chat_history) > MAX_CHAT_HISTORY:
+        chat_history.pop(0)
+
+    # Broadcast ke seluruh anggota, termasuk pengirim
+    socketio.emit('receive_message', message)
+
+    print(f"[CHAT] {user['name']}: {message_text}")
+
 
 # ======================
 # DISCONNECT
